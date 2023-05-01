@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userinfo_db = require('../schemas/userinfo');
+const { Users } = require('../models');
 const authMiddleware = require('../middlewares/auth-middleware.js');
 const jwt = require('jsonwebtoken');
 
@@ -8,15 +8,14 @@ const jwt = require('jsonwebtoken');
 router.post('/signup', async (req, res) => {
     try {
         const { nickname, password, confirm } = req.body;
-        return;
 
         //닉네임 판별
-        if (nickname.length < 3 || !/^[a-zA-Z0-9]+$/.test(nickname)) {
+        if (nickname.length <= 3 || !/^[a-zA-Z0-9]+$/.test(nickname)) {
             return res
                 .status(412)
                 .json({ errorMessage: '닉네임의 형식이 일치하지 않습니다.' });
         }
-        const existUser = await userinfo_db.findOne({ nickname });
+        const existUser = await Users.findOne({ where: { nickname } });
         if (existUser) {
             return res
                 .status(412)
@@ -40,11 +39,7 @@ router.post('/signup', async (req, res) => {
             });
         }
         //회원정보 저장
-        const userinfo = new userinfo_db({
-            nickname,
-            password,
-        });
-        await userinfo.save();
+        await Users.create({ nickname, password });
 
         return res.status(201).json({ message: '회원가입에 성공하였습니다.' });
     } catch (err) {
@@ -60,7 +55,7 @@ router.post('/login', async (req, res) => {
     try {
         const { nickname, password } = req.body;
 
-        const user = await userinfo_db.findOne({ nickname });
+        const user = await Users.findOne({ where: { nickname } });
 
         if (!user || password !== user.password) {
             res.status(412).json({

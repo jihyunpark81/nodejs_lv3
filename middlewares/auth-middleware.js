@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const userinfo_db = require('../schemas/userinfo');
+const { Users } = require('../models');
 
 // 사용자 인증 미들웨어
 module.exports = async (req, res, next) => {
@@ -21,7 +21,8 @@ module.exports = async (req, res, next) => {
         // 2. authToken이 서버가 발급한 Token이 맞는지 확인
         const { userId } = jwt.verify(authToken, 'customized-secret-key');
         // 3. authToken 있는 userId에 해당하는 사용자가 실제 DB에 존재하는지 확인
-        const user = await userinfo_db.findById(userId);
+        // const user = await userinfo_db.findById(userId); // mongoDB 방식
+        const user = await Users.findOne({ where: { userId } });
         res.locals.user = user;
         next(); // 이 미들웨어 다음으로 보낸다.
     } catch (error) {
