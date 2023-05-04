@@ -7,7 +7,7 @@ const authMiddleware = require('../middlewares/auth-middleware');
 //게시글 생성   POST -> localhost:3000/posts
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const { userId, nickname } = res.locals.user;
+        const { userId } = res.locals.user;
         const { title, content } = req.body;
 
         if (!title || !content) {
@@ -30,11 +30,13 @@ router.post('/', authMiddleware, async (req, res) => {
             UserId: userId,
             title,
             content,
+            likes: 0,
         });
         return res
             .status(200)
             .json({ message: '게시글작성에 성공하였습니다.' });
-    } catch {
+    } catch (error) {
+        console.log(error);
         return res
             .status(400)
             .json({ errorMessage: '게시글 작성에 실패하였습니다.' });
@@ -94,6 +96,9 @@ router.get('/:postId', async (req, res) => {
             ],
             where: { postId },
         });
+        if (post == null) {
+            throw new Error();
+        }
         const postPrint = {
             postId: post.postId,
             userId: post.UserId,
