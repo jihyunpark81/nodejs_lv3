@@ -27,7 +27,7 @@ router.put('/:postId/like', authMiddleware, async (req, res) => {
             });
             await Posts.increment('likes', {
                 where: {
-                    [Op.and]: [{ UserId: userId }, { PostId: postId }],
+                    [Op.and]: [{ PostId: postId }],
                 },
             });
             return res
